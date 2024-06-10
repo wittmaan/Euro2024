@@ -61,11 +61,11 @@ for odds in odds_list:
 df_odds = pd.DataFrame(odds_list_evaluated, columns=bookmaker_list)
 df_odds["team"] = country_list
 
-df_groups = pd.read_csv("../data/euro_groups_teams.csv", sep=";")
+df_groups = pd.read_csv("../../../data/euro_groups_teams.csv", sep=";")
 df_odds = df_odds.merge(df_groups, on="team")
 df_odds = df_odds[["group", "team", "code"] + bookmaker_list]
 
 current_date = datetime.now().strftime("%Y%m%d")
-df_odds.to_csv(f"../data/bettingOdds_{current_date}.csv", index=False)
+df_odds.to_csv(f"../../../data/bettingOdds_{current_date}.csv", index=False)
 
 driver.quit()

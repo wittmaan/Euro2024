@@ -2,7 +2,7 @@ library(data.table)
 library(dplyr)
 
 bettingsodds_filename <- "bettingOdds_20240609.csv"
-dat <- fread(paste0("../data/", bettingsodds_filename))
+dat <- fread(paste0("../../../data/", bettingsodds_filename))
 
 calcOdds <- function(quotedOdds, delta=1) {
   (quotedOdds - 1) / delta
@@ -37,4 +37,4 @@ dat[, probabilities := invLogit(logOdds)]
 date_part <- sub("bettingOdds_(\\d{8})\\.csv", "\\1", bettingsodds_filename)
 probabilities_filename <- paste0("probabilities_", date_part, ".csv")
 
-fwrite(dat[, .(code, group, logOdds, probabilities)], paste0("../data/", probabilities_filename), sep = ";")
+fwrite(dat[, .(code, group, logOdds, probabilities)], paste0("../../../data/", probabilities_filename), sep = ";")

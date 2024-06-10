@@ -49,7 +49,7 @@ public class TournamentSimulator {
         simulator.writeResult();
 
         final long end = System.currentTimeMillis();
-        log.info("processing time in cpu-millis: " + (double) (end - start));
+        log.info("processing time in cpu-millis: {}", (double) (end - start));
         log.info("==================== end ====================");
     }
 
@@ -67,7 +67,7 @@ public class TournamentSimulator {
 
     private boolean checkTeamAbility(int iter) {
         AbilityAdaptor adaptor = new AbilityAdaptor(teams);
-        log.info("iteration = " + (iter + 1) + ", relative error = " + String.format(Locale.ENGLISH, "%4f", adaptor.getRelativeError()));
+        log.info("iteration = {}, relative error = {}", iter + 1, String.format(Locale.ENGLISH, "%4f", adaptor.getRelativeError()));
 
         if (adaptor.getRelativeError() < Util.TARGET_RELATIVE_ERROR) {
             return true;
@@ -115,7 +115,7 @@ public class TournamentSimulator {
         Team team3GroupF = filterTeamByGroupStanding(GroupName.F.name(), 3);
 
         Team team3GroupDEF = getTeamByProbability(Arrays.asList(team3GroupD, team3GroupE, team3GroupF), null);
-        Team team3GroupADEF = getTeamByProbability(Arrays.asList(team3GroupA, team3GroupD, team3GroupE, team3GroupF), Arrays.asList(team3GroupDEF));
+        Team team3GroupADEF = getTeamByProbability(Arrays.asList(team3GroupA, team3GroupD, team3GroupE, team3GroupF), Collections.singletonList(team3GroupDEF));
         Team team3GroupABC = getTeamByProbability(Arrays.asList(team3GroupA, team3GroupB, team3GroupC), Arrays.asList(team3GroupDEF, team3GroupADEF));
         Team team3GroupABCD = getTeamByProbability(Arrays.asList(team3GroupA, team3GroupB, team3GroupC, team3GroupD), Arrays.asList(team3GroupDEF, team3GroupADEF, team3GroupABC));
 
@@ -178,7 +178,7 @@ public class TournamentSimulator {
     }
 
     private Team getTeamByProbability(final List<Team> teams, List<Team> teamsToExclude) {
-        List<Team> teamsForSelection = new ArrayList<Team>(teams);
+        List<Team> teamsForSelection = new ArrayList<>(teams);
 
         if (teamsToExclude != null) {
             teamsForSelection = teamsForSelection
@@ -187,7 +187,18 @@ public class TournamentSimulator {
                     .collect(Collectors.toList());
         }
 
-        return teamsForSelection
+        // Step 1: filter teams with max points
+          int maxPoints = teamsForSelection.stream()
+                .mapToInt(team -> team.groupStage.points)
+                .max()
+                .orElse(0);
+
+          List<Team> teamsWithMaxPoints = teamsForSelection.stream()
+                .filter(team -> team.groupStage.points == maxPoints)
+                .collect(Collectors.toList());
+
+          // Step 2: filter teams with the maximum probability
+        return teamsWithMaxPoints
                 .stream()
                 .max(Comparator.comparing(Team::getProbability))
                 .orElseThrow(NoSuchElementException::new);
@@ -336,7 +347,7 @@ public class TournamentSimulator {
                 try {
                     bw.write(line);
                 } catch (IOException e) {
-                    log.error("could not write line " + line);
+                    log.error("could not write line {}", line);
                     e.printStackTrace();
                 }
             });
